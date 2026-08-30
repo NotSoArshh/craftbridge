@@ -1,47 +1,85 @@
-export default function Page() {
-  return (
-    <main
-      style={{
-        colorScheme: 'light dark',
-        position: 'relative',
-        display: 'flex',
-        minHeight: '100vh',
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: 'light-dark(#fff, #000)',
-        color: 'light-dark(#000, #fff)',
-      }}
-    >
-      <svg
-        aria-hidden="true"
-        style={{ width: 80, height: 80 }}
-        width={80}
-        height={80}
-        fill="none"
-        viewBox="0 0 20 20"
-        xmlns="http://www.w3.org/2000/svg"
-        stroke="currentColor"
-        strokeWidth="0.5"
-      >
-        <path
-          d="M14.2 14.2H17V6.9375C17 4.76288 15.2371 3 13.0625 3H5.8V5.8M14.2 14.2V7.79063L7.79062 14.2H14.2ZM14.2 14.2V17H6.9375C4.76288 17 3 15.2371 3 13.0625V5.8H5.8M5.8 5.8V12.2313L12.2313 5.8H5.8Z"
-          strokeLinejoin="round"
-        />
-      </svg>
-      <p
-        style={{
-          position: 'absolute',
-          left: '50%',
-          top: 'calc(50% + 56px)',
-          transform: 'translateX(-50%)',
-          whiteSpace: 'nowrap',
-          fontSize: '14px',
-          fontWeight: 500,
-          color: 'light-dark(#71717a, #a1a1aa)',
-        }}
-      >
-        Your v0 generation will show here.
-      </p>
-    </main>
-  )
+'use client'
+
+import { useMemo, useState } from 'react'
+
+const markets = [
+  { key: 'local', label: 'Local Market', score: 92, status: 'Ready', reason: 'Your village and nearby markets already know this craft.', gap: 'Wider product range' },
+  { key: 'online', label: 'Online Marketplace', score: 78, status: 'Ready', reason: 'Strong quality and pricing make this a good next step.', gap: 'Digital catalog' },
+  { key: 'retail', label: 'Retail / Boutique', score: 65, status: 'Almost ready', reason: 'Boutiques value your finish, but need consistent supply.', gap: 'Packaging' },
+  { key: 'wholesale', label: 'Wholesale', score: 54, status: 'Needs work', reason: 'Bulk buyers need higher monthly capacity.', gap: 'Capacity and pricing' },
+  { key: 'export', label: 'Export', score: 32, status: 'Not yet', reason: 'Export needs stronger packaging and documentation.', gap: 'Export packaging' },
+]
+
+const products = [
+  { name: 'Bamboo Basket', price: '₹850', type: 'Bamboo handicraft', image: '/bamboo-basket.png' },
+  { name: 'Terracotta Diya Set', price: '₹450', type: 'Terracotta', image: '/terracotta-diyas.png' },
+  { name: 'Handwoven Saree', price: '₹2,800', type: 'Handloom textile', image: '/handwoven-saree.png' },
+  { name: 'Wooden Craft', price: '₹1,200', type: 'Wood craft', image: '/wooden-craft.png' },
+]
+
+const copy: Record<string, Record<string, string>> = {
+  en: { hello: 'Namaste, Ramesh ji!', intro: 'Let us help your craft reach the right market.', add: 'Add product', markets: 'Find markets', ready: 'My readiness', progress: 'My progress', suggestion: 'AI suggestion', suggestionText: 'Online marketplaces may be a great next step for your Bamboo Basket. Complete your digital catalog before approaching larger buyers.', home: 'Home', products: 'My products', help: 'Help', profile: 'Profile', intelligence: 'Market intelligence', journey: 'Your journey' },
+  hi: { hello: 'नमस्ते, रमेश जी!', intro: 'आपके सामान को सही बाज़ार तक पहुँचाने में हम आपकी मदद करेंगे।', add: 'सामान जोड़ें', markets: 'बाज़ार खोजें', ready: 'मेरी तैयारी', progress: 'मेरी प्रगति', suggestion: 'AI सुझाव', suggestionText: 'आपके Bamboo Basket के लिए Online Marketplace अच्छा अगला कदम हो सकता है। बड़े खरीदारों से पहले अपना डिजिटल कैटलॉग पूरा करें।', home: 'होम', products: 'मेरे सामान', help: 'मदद', profile: 'प्रोफ़ाइल', intelligence: 'बाज़ार तैयारी', journey: 'आपकी यात्रा' },
+  te: { hello: 'నమస్కారం, రమేష్ గారు!', intro: 'మీ కళను సరైన మార్కెట్‌కు చేర్చడంలో మేము సహాయం చేస్తాము.', add: 'సామాను జోడించండి', markets: 'మార్కెట్లు వెతకండి', ready: 'నా సిద్ధత', progress: 'నా పురోగతి', suggestion: 'AI సూచన', suggestionText: 'మీ Bamboo Basket కోసం Online Marketplace మంచి తదుపరి అడుగు కావచ్చు.', home: 'హోమ్', products: 'నా ఉత్పత్తులు', help: 'సహాయం', profile: 'ప్రొఫైల్', intelligence: 'మార్కెట్ సిద్ధత', journey: 'మీ ప్రయాణం' },
+  ta: { hello: 'வணக்கம், ரமேஷ் ji!', intro: 'உங்கள் கைவினைப் பொருளை சரியான சந்தைக்கு கொண்டு செல்ல உதவுகிறோம்.', add: 'பொருள் சேர்க்க', markets: 'சந்தைகளை தேடுக', ready: 'என் தயார்நிலை', progress: 'என் முன்னேற்றம்', suggestion: 'AI பரிந்துரை', suggestionText: 'உங்கள் Bamboo Basket-க்கு Online Marketplace நல்ல அடுத்த படியாகும்.', home: 'முகப்பு', products: 'என் பொருட்கள்', help: 'உதவி', profile: 'சுயவிவரம்', intelligence: 'சந்தை தயார்நிலை', journey: 'உங்கள் பயணம்' },
+  ml: { hello: 'നമസ്കാരം, രമേഷ് ji!', intro: 'നിങ്ങളുടെ കരകൗശലം ശരിയായ വിപണിയിൽ എത്തിക്കാൻ ഞങ്ങൾ സഹായിക്കും.', add: 'ഉൽപ്പന്നം ചേർക്കുക', markets: 'വിപണി കണ്ടെത്തുക', ready: 'എന്റെ തയ്യാറെടുപ്പ്', progress: 'എന്റെ പുരോഗതി', suggestion: 'AI നിർദ്ദേശം', suggestionText: 'നിങ്ങളുടെ Bamboo Basket-ന് Online Marketplace നല്ല അടുത്ത ചുവടായിരിക്കും.', home: 'ഹോം', products: 'എന്റെ ഉൽപ്പന്നങ്ങൾ', help: 'സഹായം', profile: 'പ്രൊഫൈൽ', intelligence: 'വിപണി തയ്യാറെടുപ്പ്', journey: 'നിങ്ങളുടെ യാത്ര' },
+  kn: { hello: 'ನಮಸ್ಕಾರ, ರಮೇಶ್ ji!', intro: 'ನಿಮ್ಮ ಕರಕುಶಲವನ್ನು ಸರಿಯಾದ ಮಾರುಕಟ್ಟೆಗೆ ತಲುಪಿಸಲು ನಾವು ಸಹಾಯ ಮಾಡುತ್ತೇವೆ.', add: 'ಉತ್ಪನ್ನ ಸೇರಿಸಿ', markets: 'ಮಾರುಕಟ್ಟೆ ಹುಡುಕಿ', ready: 'ನನ್ನ ಸಿದ್ಧತೆ', progress: 'ನನ್ನ ಪ್ರಗತಿ', suggestion: 'AI ಸಲಹೆ', suggestionText: 'ನಿಮ್ಮ Bamboo Basket ಗೆ Online Marketplace ಉತ್ತಮ ಮುಂದಿನ ಹೆಜ್ಜೆಯಾಗಬಹುದು.', home: 'ಮುಖಪುಟ', products: 'ನನ್ನ ಉತ್ಪನ್ನಗಳು', help: 'ಸಹಾಯ', profile: 'ಪ್ರೊಫೈಲ್', intelligence: 'ಮಾರುಕಟ್ಟೆ ಸಿದ್ಧತೆ', journey: 'ನಿಮ್ಮ ಪ್ರಯಾಣ' },
+  bn: { hello: 'নমস্কার, রমেশ ji!', intro: 'আপনার কারুশিল্পকে সঠিক বাজারে পৌঁছাতে আমরা সাহায্য করব।', add: 'পণ্য যোগ করুন', markets: 'বাজার খুঁজুন', ready: 'আমার প্রস্তুতি', progress: 'আমার অগ্রগতি', suggestion: 'AI পরামর্শ', suggestionText: 'আপনার Bamboo Basket-এর জন্য Online Marketplace একটি ভালো পরবর্তী পদক্ষেপ হতে পারে।', home: 'হোম', products: 'আমার পণ্য', help: 'সাহায্য', profile: 'প্রোফাইল', intelligence: 'বাজার প্রস্তুতি', journey: 'আপনার যাত্রা' },
 }
+
+function ProgressBar({ value, tone = 'terracotta' }: { value: number; tone?: 'terracotta' | 'green' | 'mustard' }) {
+  return <div className="progress-track" aria-label={`${value}%`}><span className={`progress-fill ${tone}`} style={{ width: `${value}%` }} /></div>
+}
+
+function VoiceButton({ onSpeak, label = 'बोलकर बताएं' }: { onSpeak: () => void; label?: string }) {
+  const [listening, setListening] = useState(false)
+  return <button className={`voice-btn ${listening ? 'listening' : ''}`} onClick={() => { setListening(true); onSpeak(); setTimeout(() => setListening(false), 2200) }} aria-label={label}><span className="voice-icon">{listening ? '◉' : '◌'}</span>{listening ? 'सुन रहे हैं...' : label}</button>
+}
+
+export default function Page() {
+  const [language, setLanguage] = useState('hi')
+  const [page, setPage] = useState('home')
+  const [showLanguage, setShowLanguage] = useState(true)
+  const [showAnalysis, setShowAnalysis] = useState(false)
+  const [analysisStep, setAnalysisStep] = useState(0)
+  const [showBuyer, setShowBuyer] = useState(false)
+  const [showProfile, setShowProfile] = useState(false)
+  const [toast, setToast] = useState('')
+  const [roadmap, setRoadmap] = useState([false, false, true, false])
+  const t = copy[language]
+
+  const notify = (message: string) => { setToast(message); setTimeout(() => setToast(''), 2600) }
+  const startAnalysis = () => { setShowAnalysis(true); setAnalysisStep(0); const timer = setInterval(() => setAnalysisStep((current) => { if (current >= 5) { clearInterval(timer); return 5 } return current + 1 }), 520) }
+  const score = useMemo(() => markets.find((item) => item.key === 'online')!, [])
+
+  if (showLanguage) return <main className="language-page"><div className="language-art">◌</div><div className="language-card"><div className="brand-mark">craft<span>bridge</span><small>AI</small></div><h1>आपकी कला, सही बाज़ार</h1><p>Understand your market. Grow with confidence.</p><div className="language-list">{[['hi','हिंदी'], ['en','English'], ['te','తెలుగు'], ['ta','தமிழ்'], ['ml','മലയാളം'], ['kn','ಕನ್ನಡ'], ['bn','বাংলা']].map(([key, label]) => <button key={key} className={language === key ? 'selected' : ''} onClick={() => setLanguage(key)}><span>{label}</span>{language === key && <b>✓</b>}</button>)}</div><button className="primary-btn full" onClick={() => setShowLanguage(false)}>आगे बढ़ें <span>→</span></button></div></main>
+
+  return <div className="app-shell">
+    <header className="topbar"><button className="brand" onClick={() => setPage('home')}><span className="brand-symbol">✦</span><span>craft<span>bridge</span><small>AI</small></span></button><div className="top-actions"><button className="language-pill" onClick={() => setShowLanguage(true)}>{language === 'hi' ? 'हिंदी' : language.toUpperCase()} <span>⌄</span></button><button className="avatar" onClick={() => setShowProfile(true)}>RK</button></div></header>
+    <main className="content">
+      {page === 'home' && <Home t={t} onNavigate={setPage} onAnalysis={startAnalysis} onVoice={() => notify('मैं अपने सामान को ऑनलाइन बेचना चाहता हूँ।')} />}
+      {page === 'products' && <Products t={t} onAdd={startAnalysis} onNavigate={setPage} />}
+      {page === 'intelligence' && <Intelligence score={score} onNavigate={setPage} roadmap={roadmap} setRoadmap={setRoadmap} />}
+      {page === 'buyers' && <Buyers onContact={() => setShowBuyer(true)} />}
+      {page === 'progress' && <ProgressView />}
+      {page === 'help' && <Help onVoice={() => notify('AI: Online Marketplace आपके लिए अच्छा विकल्प हो सकता है।')} />}
+    </main>
+    <nav className="bottom-nav">{[['home','⌂',t.home], ['products','▣',t.products], ['intelligence','◎',t.intelligence], ['buyers','♧','Buyers'], ['progress','↗',t.progress]].map(([key, icon, label]) => <button key={key} className={page === key ? 'active' : ''} onClick={() => setPage(key)}><span>{icon}</span>{label}</button>)}</nav>
+    {showAnalysis && <AnalysisModal step={analysisStep} onClose={() => { setShowAnalysis(false); setPage('intelligence') }} />}
+    {showBuyer && <BuyerModal onClose={() => setShowBuyer(false)} onDone={() => { setShowBuyer(false); notify('Message sent to Dastkar Emporium') }} />}
+    {showProfile && <ProfileModal onClose={() => setShowProfile(false)} onSave={() => { setShowProfile(false); notify('Profile updated') }} />}
+    {toast && <div className="toast">✓ {toast}</div>}
+  </div>
+}
+
+function Home({ t, onNavigate, onAnalysis, onVoice }: any) { return <div className="page-stack"><section className="welcome"><div><p className="eyebrow">CRAFTBRIDGE AI · {t.journey}</p><h1>{t.hello}</h1><p className="subhead">{t.intro}</p></div><div className="welcome-avatar">RK</div></section><section className="hero-card"><div className="hero-copy"><span className="tag">AI MARKET INTELLIGENCE</span><h2>आपका सामान।<br /><em>सही बाज़ार।</em></h2><p>We look at your craft, capacity, location and digital readiness — then explain what to do next.</p><button className="light-btn" onClick={onAnalysis}>See my market readiness <span>→</span></button></div><div className="hero-image"><img src="https://images.unsplash.com/photo-1590736969955-71cc94901144?auto=format&fit=crop&w=900&q=85" alt="Handwoven bamboo basket in an artisan workshop" /><span className="image-caption">Made by hands · Amaravati</span></div></section><section className="quick-actions"><Action icon="＋" label={t.add} onClick={onAnalysis} /><Action icon="⌕" label={t.markets} onClick={() => onNavigate('buyers')} /><Action icon="◎" label={t.ready} onClick={() => onNavigate('intelligence')} /><Action icon="↗" label={t.progress} onClick={() => onNavigate('progress')} /></section><section className="suggestion-card"><div className="suggestion-icon">✦</div><div><p className="eyebrow">{t.suggestion}</p><p>{t.suggestionText}</p><button className="text-btn" onClick={() => onNavigate('intelligence')}>Why this recommendation? →</button></div></section><section className="section-heading"><div><p className="eyebrow">YOUR PRODUCTS</p><h2>Ready to take the next step</h2></div><button className="text-btn" onClick={() => onNavigate('products')}>See all →</button></section><div className="mini-products">{products.slice(0, 3).map((p) => <div className="mini-product" key={p.name}><img src={p.image} alt={p.name} /><div><b>{p.name}</b><span>{p.price}</span></div></div>)}</div><VoiceButton onSpeak={onVoice} /></div> }
+function Action({ icon, label, onClick }: any) { return <button className="action-card" onClick={onClick}><span className="action-icon">{icon}</span><b>{label}</b><span className="action-arrow">→</span></button> }
+function Products({ t, onAdd, onNavigate }: any) { return <div className="page-stack"><PageTitle eyebrow="MY PRODUCTS" title={t.products} action={<button className="primary-btn" onClick={onAdd}>＋ {t.add}</button>} /><div className="product-grid">{products.map((p) => <button className="product-card" key={p.name} onClick={() => onNavigate('intelligence')}><img src={p.image} alt={p.name} /><div className="product-info"><span>{p.type}</span><h3>{p.name}</h3><b>{p.price}</b><small>View analysis →</small></div></button>)}</div><div className="empty-note"><span>✦</span><div><b>Every product has a path</b><p>Add a product and our AI will show you the markets it can reach.</p></div></div></div> }
+function PageTitle({ eyebrow, title, action }: any) { return <div className="page-title"><div><p className="eyebrow">{eyebrow}</p><h1>{title}</h1></div>{action}</div> }
+function Intelligence({ score, onNavigate, roadmap, setRoadmap }: any) { const gaps = [['Digital Catalog','Needs improvement','Buyers need to see your full range in one place.'],['Product Photography','Needs improvement','Clear photos help online buyers trust the quality.'],['Packaging','Needs improvement','Stronger packaging keeps baskets safe in transit.'],['Product Quality','Ready','Your finish and material quality are a real strength.']]; return <div className="page-stack"><PageTitle eyebrow="AI MARKET INTELLIGENCE" title="आपकी बाज़ार तैयारी" action={<VoiceButton onSpeak={() => {}} label="सुनें" />} /><p className="intro-copy">हम आपके सामान, उत्पादन क्षमता, स्थान और डिजिटल तैयारी को देखकर बताते हैं कि आपके लिए कौन सा बाज़ार सही है।</p><section className="score-hero"><div className="score-ring"><strong>{score.score}</strong><span>/ 100</span></div><div><span className="status ready">● {score.status}</span><h2>{score.label}</h2><p>{score.reason}</p></div></section><section className="card-section"><div className="section-heading"><div><p className="eyebrow">EXPLAINABLE SCORE</p><h2>Why this score?</h2></div><span className="soft-badge">Updated today</span></div>{[['Product Quality',82],['Production Capacity',70],['Pricing',90],['Digital Presence',72],['Logistics',60]].map(([label, value]) => <div className="score-row" key={label as string}><div><span>{label}</span><b>{value}%</b></div><ProgressBar value={value as number} tone={label === 'Logistics' ? 'mustard' : 'terracotta'} /></div>)}</section><section className="card-section"><div className="section-heading"><div><p className="eyebrow">GAP ANALYSIS</p><h2>⚠ क्या सुधारना है?</h2></div><button className="text-btn" onClick={() => onNavigate('progress')}>Track progress →</button></div><div className="gap-list">{gaps.map(([name, status, why]) => <div className="gap-row" key={name as string}><span className={`gap-dot ${status === 'Ready' ? 'good' : ''}`}>●</span><div><b>{name}</b><small>{status}</small><p>{why}</p></div></div>)}</div></section><section className="card-section markets-section"><div className="section-heading"><div><p className="eyebrow">COMPARE MARKETS</p><h2>Where can you go next?</h2></div></div>{markets.map((m) => <button className="market-row" key={m.key} onClick={() => m.key === 'online' && onNavigate('buyers')}><div className="market-score">{m.score}<small>%</small></div><div className="market-copy"><b>{m.label}</b><span className={m.score > 70 ? 'green-text' : 'muted-text'}>{m.status}</span><p>{m.reason}</p></div><span>→</span></button>)}</section><section className="roadmap-card"><div><span className="tag">NEXT GOAL</span><h2>🚀 Become Wholesale Market Ready</h2><p>Complete these steps to unlock bigger buyers.</p></div><div className="roadmap-steps">{['Improve product photography','Complete digital catalog','Increase monthly capacity','Prepare wholesale pricing'].map((item, i) => <button key={item} className={roadmap[i] ? 'done' : ''} onClick={() => setRoadmap(roadmap.map((v: boolean, j: number) => j === i ? !v : v))}><span>{roadmap[i] ? '✓' : i + 1}</span>{item}<small>{roadmap[i] ? 'Done' : 'Mark done'}</small></button>)}</div></section></div> }
+function Buyers({ onContact }: any) { return <div className="page-stack"><PageTitle eyebrow="BUYER DISCOVERY" title="Find your next buyer" action={<button className="filter-btn">⌕ Nearby</button>} /><p className="intro-copy">Curated opportunities matched to your craft, capacity and readiness.</p><div className="buyer-list"><div className="buyer-card"><div className="buyer-logo">D</div><div className="buyer-main"><span className="soft-badge">GOOD MATCH · 86%</span><h2>Dastkar Heritage Handicrafts Emporium</h2><p>⌖ New Delhi · Interested in Terracotta & Bamboo</p><div className="buyer-details"><span>Requirement <b>50–200 pieces</b></span><span>Budget <b>₹15,000–₹50,000</b></span></div><button className="primary-btn" onClick={onContact}>बात करें <span>→</span></button></div></div><div className="buyer-card"><div className="buyer-logo green">H</div><div className="buyer-main"><span className="soft-badge">GOOD MATCH · 78%</span><h2>Hastshilp Boutique</h2><p>⌖ Vijayawada · Interested in Bamboo storage</p><div className="buyer-details"><span>Requirement <b>20–50 pieces</b></span><span>Budget <b>₹8,000–₹22,000</b></span></div><button className="outline-btn" onClick={onContact}>View details <span>→</span></button></div></div></div></div> }
+function ProgressView() { return <div className="page-stack"><PageTitle eyebrow="MY PROGRESS" title="मेरी प्रगति" action={<span className="month-pill">August 2026</span>} /><section className="earnings-grid"><div className="earning-card primary"><span>💰 मेरी कमाई</span><strong>₹12,500</strong><small>This month · <b>+18%</b></small></div><div className="earning-card"><span>Products sold</span><strong>15</strong><small>3 pending orders</small></div><div className="earning-card"><span>Upcoming</span><strong>₹2,400</strong><small>2 confirmed orders</small></div></section><section className="card-section"><div className="section-heading"><div><p className="eyebrow">YOUR GROWTH</p><h2>Small steps, bigger markets</h2></div></div><div className="growth-row"><div><span>Market Readiness</span><b>62 → 78</b></div><ProgressBar value={78} /><div><span>Digital Readiness</span><b>45% → 72%</b></div><ProgressBar value={72} tone="green" /></div></section><section className="card-section"><p className="eyebrow">THIS MONTH</p><h2>Three wins to celebrate</h2><div className="win-list"><p>✓ Added your Bamboo Basket catalog</p><p>✓ Received a buyer match from New Delhi</p><p>✓ Improved your readiness by 16 points</p></div></section></div> }
+function Help({ onVoice }: any) { return <div className="page-stack"><PageTitle eyebrow="HELP & VOICE" title="हम आपकी मदद के लिए हैं" /><section className="help-hero"><div className="help-orb">◌</div><h2>बोलकर बताएं</h2><p>आप अपने सवाल अपनी भाषा में पूछ सकते हैं।</p><VoiceButton onSpeak={onVoice} label="बोलना शुरू करें" /></section><div className="faq-list">{['मेरा सामान किस बाज़ार के लिए सही है?','मैं अपने सामान की अच्छी फोटो कैसे लूं?','Buyer से कैसे बात करूं?'].map((q) => <button key={q} onClick={onVoice}><span>?</span>{q}<b>＋</b></button>)}</div></div> }
+function AnalysisModal({ step, onClose }: any) { const steps = ['Product', 'Artisan profile', 'Production capacity', 'Location', 'Digital readiness', 'Finding suitable markets']; return <div className="modal-backdrop"><div className="analysis-modal"><div className="analysis-top"><span className="brand-mark">craft<span>bridge</span><small>AI</small></span><button onClick={onClose}>×</button></div>{step < 5 ? <><div className="analysis-illustration">✦</div><h2>AI is analyzing<br /><em>your craft...</em></h2><p>हम आपके लिए सबसे अच्छा बाज़ार खोज रहे हैं।</p><div className="analysis-steps">{steps.map((s, i) => <div className={i <= step ? 'complete' : ''} key={s}><span>{i <= step ? '✓' : '·'}</span>{s}</div>)}</div></> : <><div className="complete-icon">✓</div><span className="tag centered">ANALYSIS COMPLETE</span><h2>आपके लिए सही अगला कदम</h2><div className="result-highlight"><div className="result-number">78<small>/100</small></div><div><b>Online Marketplace</b><span>● Ready</span><p>Strong product quality & pricing</p></div></div><button className="primary-btn full" onClick={onClose}>See my market intelligence →</button></>}</div></div> }
+function BuyerModal({ onClose, onDone }: any) { return <div className="modal-backdrop"><div className="small-modal"><button className="modal-close" onClick={onClose}>×</button><div className="buyer-logo">D</div><h2>Start a conversation</h2><p>Tell Dastkar Heritage Emporium a little about your Bamboo Basket.</p><textarea placeholder="Write a short message..." defaultValue="Namaste, I make handwoven Bamboo Baskets from Amaravati. I would love to share my catalog with you." /><button className="primary-btn full" onClick={onDone}>Send message →</button></div></div> }
+function ProfileModal({ onClose, onSave }: any) { return <div className="modal-backdrop"><div className="small-modal"><button className="modal-close" onClick={onClose}>×</button><div className="profile-large">RK</div><h2>Ramesh Kumar</h2><p>Amaravati, Andhra Pradesh · Bamboo Handicrafts</p><label>Your monthly capacity<input defaultValue="30–50 pieces" /></label><label>Experience<input defaultValue="12 years" /></label><button className="primary-btn full" onClick={onSave}>Save changes</button></div></div> }
