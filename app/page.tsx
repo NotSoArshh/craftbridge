@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 const markets = [
   { key: 'local', label: 'Local Market', score: 92, status: 'Ready', reason: 'Your village and nearby markets already know this craft.', gap: 'Wider product range' },
@@ -27,6 +27,16 @@ const copy: Record<string, Record<string, string>> = {
   bn: { hello: 'নমস্কার, রমেশ ji!', intro: 'আপনার কারুশিল্পকে সঠিক বাজারে পৌঁছাতে আমরা সাহায্য করব।', add: 'পণ্য যোগ করুন', markets: 'বাজার খুঁজুন', ready: 'আমার প্রস্তুতি', progress: 'আমার অগ্রগতি', suggestion: 'AI পরামর্শ', suggestionText: 'আপনার Bamboo Basket-এর জন্য Online Marketplace একটি ভালো পরবর্তী পদক্ষেপ হতে পারে।', home: 'হোম', products: 'আমার পণ্য', help: 'সাহায্য', profile: 'প্রোফাইল', intelligence: 'বাজার প্রস্তুতি', journey: 'আপনার যাত্রা' },
 }
 
+const labels: Record<string, { buyers: string; seeAll: string; heroTag: string; heroText: string; heroButton: string; productsEyebrow: string; productsReady: string; why: string; updated: string; explain: string; track: string; listening: string; speak: string }> = {
+  en: { buyers: 'Buyers', seeAll: 'See all', heroTag: 'AI MARKET INTELLIGENCE', heroText: 'We look at your craft, capacity, location and digital readiness — then explain what to do next.', heroButton: 'See my market readiness', productsEyebrow: 'YOUR PRODUCTS', productsReady: 'Ready to take the next step', why: 'Why this recommendation?', updated: 'Updated today', explain: 'Why this score?', track: 'Track progress', listening: 'Listening...', speak: 'Speak to us' },
+  hi: { buyers: 'खरीदार', seeAll: 'सभी देखें', heroTag: 'AI बाज़ार जानकारी', heroText: 'हम आपकी कला, क्षमता, स्थान और डिजिटल तैयारी को समझकर अगला कदम बताते हैं।', heroButton: 'मेरी बाज़ार तैयारी देखें', productsEyebrow: 'आपका सामान', productsReady: 'अगले कदम के लिए तैयार', why: 'यह सुझाव क्यों?', updated: 'आज अपडेट किया गया', explain: 'यह अंक क्यों?', track: 'प्रगति देखें', listening: 'सुन रहे हैं...', speak: 'बोलकर बताएं' },
+  te: { buyers: 'కొనుగోలుదారులు', seeAll: 'అన్నీ చూడండి', heroTag: 'AI మార్కెట్ సమాచారం', heroText: 'మీ కళ, సామర్థ్యం, ప్రాంతం మరియు డిజిటల్ సిద్ధతను చూసి మేము తదుపరి అడుగు చెబుతాము.', heroButton: 'నా మార్కెట్ సిద్ధత చూడండి', productsEyebrow: 'మీ ఉత్పత్తులు', productsReady: 'తదుపరి అడుగుకు సిద్ధం', why: 'ఈ సూచన ఎందుకు?', updated: 'ఈరోజు నవీకరించబడింది', explain: 'ఈ స్కోరు ఎందుకు?', track: 'పురోగతిని చూడండి', listening: 'వింటున్నాము...', speak: 'మాట్లాడండి' },
+  ta: { buyers: 'வாங்குபவர்கள்', seeAll: 'அனைத்தையும் காண்க', heroTag: 'AI சந்தை தகவல்', heroText: 'உங்கள் கைவினை, திறன், இடம் மற்றும் டிஜிட்டல் தயார்நிலையைப் பார்த்து அடுத்த படியைச் சொல்கிறோம்.', heroButton: 'என் சந்தை தயார்நிலையை காண்க', productsEyebrow: 'என் பொருட்கள்', productsReady: 'அடுத்த படிக்கு தயார்', why: 'இந்த பரிந்துரை ஏன்?', updated: 'இன்று புதுப்பிக்கப்பட்டது', explain: 'இந்த மதிப்பெண் ஏன்?', track: 'முன்னேற்றத்தை காண்க', listening: 'கேட்கிறோம்...', speak: 'பேசுங்கள்' },
+  ml: { buyers: 'വാങ്ങുന്നവർ', seeAll: 'എല്ലാം കാണുക', heroTag: 'AI വിപണി വിവരം', heroText: 'നിങ്ങളുടെ കരകൗശലം, ശേഷി, സ്ഥലം, ഡിജിറ്റൽ തയ്യാറെടുപ്പ് എന്നിവ നോക്കി അടുത്ത ചുവട് പറയുന്നു.', heroButton: 'എന്റെ വിപണി തയ്യാറെടുപ്പ് കാണുക', productsEyebrow: 'എന്റെ ഉൽപ്പന്നങ്ങൾ', productsReady: 'അടുത്ത ചുവടിന് തയ്യാറാണ്', why: 'ഈ നിർദ്ദേശം എന്തുകൊണ്ട്?', updated: 'ഇന്ന് പുതുക്കിയത്', explain: 'ഈ സ്കോർ എന്തുകൊണ്ട്?', track: 'പുരോഗതി കാണുക', listening: 'കേൾക്കുന്നു...', speak: 'സംസാരിക്കുക' },
+  kn: { buyers: 'ಖರೀದಿದಾರರು', seeAll: 'ಎಲ್ಲವನ್ನೂ ನೋಡಿ', heroTag: 'AI ಮಾರುಕಟ್ಟೆ ಮಾಹಿತಿ', heroText: 'ನಿಮ್ಮ ಕಲೆ, ಸಾಮರ್ಥ್ಯ, ಸ್ಥಳ ಮತ್ತು ಡಿಜಿಟಲ್ ಸಿದ್ಧತೆಯನ್ನು ನೋಡಿ ಮುಂದಿನ ಹೆಜ್ಜೆ ತಿಳಿಸುತ್ತೇವೆ.', heroButton: 'ನನ್ನ ಮಾರುಕಟ್ಟೆ ಸಿದ್ಧತೆ ನೋಡಿ', productsEyebrow: 'ನನ್ನ ಉತ್ಪನ್ನಗಳು', productsReady: 'ಮುಂದಿನ ಹೆಜ್ಜೆಗೆ ಸಿದ್ಧ', why: 'ಈ ಸಲಹೆ ಏಕೆ?', updated: 'ಇಂದು ನವೀಕರಿಸಲಾಗಿದೆ', explain: 'ಈ ಅಂಕ ಏಕೆ?', track: 'ಪ್ರಗತಿ ನೋಡಿ', listening: 'ಕೇಳುತ್ತಿದ್ದೇವೆ...', speak: 'ಮಾತನಾಡಿ' },
+  bn: { buyers: 'ক্রেতা', seeAll: 'সব দেখুন', heroTag: 'AI বাজার তথ্য', heroText: 'আপনার কারুশিল্প, ক্ষমতা, অবস্থান ও ডিজিটাল প্রস্তুতি দেখে আমরা পরবর্তী পদক্ষেপ বলি।', heroButton: 'আমার বাজার প্রস্তুতি দেখুন', productsEyebrow: 'আমার পণ্য', productsReady: 'পরবর্তী পদক্ষেপের জন্য প্রস্তুত', why: 'এই পরামর্শ কেন?', updated: 'আজ আপডেট হয়েছে', explain: 'এই স্কোর কেন?', track: 'অগ্রগতি দেখুন', listening: 'শুনছি...', speak: 'কথা বলুন' },
+}
+
 function ProgressBar({ value, tone = 'terracotta' }: { value: number; tone?: 'terracotta' | 'green' | 'mustard' }) {
   return <div className="progress-track" aria-label={`${value}%`}><span className={`progress-fill ${tone}`} style={{ width: `${value}%` }} /></div>
 }
@@ -37,34 +47,45 @@ function VoiceButton({ onSpeak, label = 'बोलकर बताएं' }: { o
 }
 
 export default function Page() {
-  const [language, setLanguage] = useState('hi')
+  const [language, setLanguage] = useState<string | null>(null)
   const [page, setPage] = useState('home')
   const [showLanguage, setShowLanguage] = useState(true)
+
+  useEffect(() => {
+    const saved = window.localStorage.getItem('craftbridge-language')
+    if (saved && copy[saved]) { setLanguage(saved); setShowLanguage(false) }
+  }, [])
+
+  const chooseLanguage = (next: string) => {
+    setLanguage(next)
+    window.localStorage.setItem('craftbridge-language', next)
+  }
   const [showAnalysis, setShowAnalysis] = useState(false)
   const [analysisStep, setAnalysisStep] = useState(0)
   const [showBuyer, setShowBuyer] = useState(false)
   const [showProfile, setShowProfile] = useState(false)
   const [toast, setToast] = useState('')
   const [roadmap, setRoadmap] = useState([false, false, true, false])
-  const t = copy[language]
+  const t = copy[language ?? 'hi']
+  const l = labels[language ?? 'hi']
 
   const notify = (message: string) => { setToast(message); setTimeout(() => setToast(''), 2600) }
   const startAnalysis = () => { setShowAnalysis(true); setAnalysisStep(0); const timer = setInterval(() => setAnalysisStep((current) => { if (current >= 5) { clearInterval(timer); return 5 } return current + 1 }), 520) }
   const score = useMemo(() => markets.find((item) => item.key === 'online')!, [])
 
-  if (showLanguage) return <main className="language-page"><div className="language-art">◌</div><div className="language-card"><div className="brand-mark">craft<span>bridge</span><small>AI</small></div><h1>आपकी कला, सही बाज़ार</h1><p>Understand your market. Grow with confidence.</p><div className="language-list">{[['hi','हिंदी'], ['en','English'], ['te','తెలుగు'], ['ta','தமிழ்'], ['ml','മലയാളം'], ['kn','ಕನ್ನಡ'], ['bn','বাংলা']].map(([key, label]) => <button key={key} className={language === key ? 'selected' : ''} onClick={() => setLanguage(key)}><span>{label}</span>{language === key && <b>✓</b>}</button>)}</div><button className="primary-btn full" onClick={() => setShowLanguage(false)}>आगे बढ़ें <span>→</span></button></div></main>
+  if (showLanguage) return <main className={`language-page lang-${language ?? 'hi'}`}><div className="language-art">🌾</div><div className="language-card"><div className="brand-mark">craft<span>bridge</span><small>AI</small></div><h1>अपने हुनर को सही बाज़ार तक पहुँचाएँ</h1><p>अपनी भाषा चुनें</p><div className="language-list">{[['hi','हिंदी'], ['en','English'], ['te','తెలుగు'], ['ta','தமிழ்'], ['ml','മലയാളം'], ['kn','ಕನ್ನಡ'], ['bn','বাংলা']].map(([key, label]) => <button key={key} className={`${language === key ? 'selected' : ''} lang-${key}`} onClick={() => chooseLanguage(key)}><span>{label}</span>{language === key && <b>✓</b>}</button>)}</div><button className="primary-btn full" disabled={!language} onClick={() => language && setShowLanguage(false)}>आगे बढ़ें <span>→</span></button></div></main>
 
-  return <div className="app-shell">
+  return <div className={`app-shell lang-${language ?? 'hi'}`}>
     <header className="topbar"><button className="brand" onClick={() => setPage('home')}><span className="brand-symbol">✦</span><span>craft<span>bridge</span><small>AI</small></span></button><div className="top-actions"><button className="language-pill" onClick={() => setShowLanguage(true)}>{language === 'hi' ? 'हिंदी' : language.toUpperCase()} <span>⌄</span></button><button className="avatar" onClick={() => setShowProfile(true)}>RK</button></div></header>
     <main className="content">
-      {page === 'home' && <Home t={t} onNavigate={setPage} onAnalysis={startAnalysis} onVoice={() => notify('मैं अपने सामान को ऑनलाइन बेचना चाहता हूँ।')} />}
+      {page === 'home' && <Home t={t} l={l} language={language} onNavigate={setPage} onAnalysis={startAnalysis} onVoice={() => notify('मैं अपने सामान को ऑनलाइन बेचना चाहता हूँ।')} />}
       {page === 'products' && <Products t={t} onAdd={startAnalysis} onNavigate={setPage} />}
       {page === 'intelligence' && <Intelligence score={score} onNavigate={setPage} roadmap={roadmap} setRoadmap={setRoadmap} />}
       {page === 'buyers' && <Buyers onContact={() => setShowBuyer(true)} />}
       {page === 'progress' && <ProgressView />}
       {page === 'help' && <Help onVoice={() => notify('AI: Online Marketplace आपके लिए अच्छा विकल्प हो सकता है।')} />}
     </main>
-    <nav className="bottom-nav">{[['home','⌂',t.home], ['products','▣',t.products], ['intelligence','◎',t.intelligence], ['buyers','♧','Buyers'], ['progress','↗',t.progress]].map(([key, icon, label]) => <button key={key} className={page === key ? 'active' : ''} onClick={() => setPage(key)}><span>{icon}</span>{label}</button>)}</nav>
+    <nav className="bottom-nav">{[['home','⌂',t.home], ['products','▣',t.products], ['intelligence','◎',t.intelligence], ['buyers','♧',l.buyers], ['progress','↗',t.progress]].map(([key, icon, label]) => <button key={key} className={page === key ? 'active' : ''} onClick={() => setPage(key)}><span>{icon}</span>{label}</button>)}</nav>
     {showAnalysis && <AnalysisModal step={analysisStep} onClose={() => { setShowAnalysis(false); setPage('intelligence') }} />}
     {showBuyer && <BuyerModal onClose={() => setShowBuyer(false)} onDone={() => { setShowBuyer(false); notify('Message sent to Dastkar Emporium') }} />}
     {showProfile && <ProfileModal onClose={() => setShowProfile(false)} onSave={() => { setShowProfile(false); notify('Profile updated') }} />}
@@ -72,7 +93,7 @@ export default function Page() {
   </div>
 }
 
-function Home({ t, onNavigate, onAnalysis, onVoice }: any) { return <div className="page-stack"><section className="welcome"><div><p className="eyebrow">CRAFTBRIDGE AI · {t.journey}</p><h1>{t.hello}</h1><p className="subhead">{t.intro}</p></div><div className="welcome-avatar">RK</div></section><section className="hero-card"><div className="hero-copy"><span className="tag">AI MARKET INTELLIGENCE</span><h2>आपका सामान।<br /><em>सही बाज़ार।</em></h2><p>We look at your craft, capacity, location and digital readiness — then explain what to do next.</p><button className="light-btn" onClick={onAnalysis}>See my market readiness <span>→</span></button></div><div className="hero-image"><img src="https://images.unsplash.com/photo-1590736969955-71cc94901144?auto=format&fit=crop&w=900&q=85" alt="Handwoven bamboo basket in an artisan workshop" /><span className="image-caption">Made by hands · Amaravati</span></div></section><section className="quick-actions"><Action icon="＋" label={t.add} onClick={onAnalysis} /><Action icon="⌕" label={t.markets} onClick={() => onNavigate('buyers')} /><Action icon="◎" label={t.ready} onClick={() => onNavigate('intelligence')} /><Action icon="↗" label={t.progress} onClick={() => onNavigate('progress')} /></section><section className="suggestion-card"><div className="suggestion-icon">✦</div><div><p className="eyebrow">{t.suggestion}</p><p>{t.suggestionText}</p><button className="text-btn" onClick={() => onNavigate('intelligence')}>Why this recommendation? →</button></div></section><section className="section-heading"><div><p className="eyebrow">YOUR PRODUCTS</p><h2>Ready to take the next step</h2></div><button className="text-btn" onClick={() => onNavigate('products')}>See all →</button></section><div className="mini-products">{products.slice(0, 3).map((p) => <div className="mini-product" key={p.name}><img src={p.image} alt={p.name} /><div><b>{p.name}</b><span>{p.price}</span></div></div>)}</div><VoiceButton onSpeak={onVoice} /></div> }
+function Home({ t, l, language, onNavigate, onAnalysis, onVoice }: any) { return <div className="page-stack"><section className="welcome"><div><p className="eyebrow">CRAFTBRIDGE AI · {t.journey}</p><h1>{t.hello}</h1><p className="subhead">{t.intro}</p></div><div className="welcome-avatar">RK</div></section><section className="hero-card"><div className="hero-copy"><span className="tag">{l.heroTag}</span><h2>{language === 'en' ? 'Your craft.' : 'आपका सामान।'}<br /><em>{language === 'en' ? 'The right market.' : 'सही बाज़ार।'}</em></h2><p>{l.heroText}</p><button className="light-btn" onClick={onAnalysis}>{l.heroButton} <span>→</span></button></div><div className="hero-image"><img src="/bamboo-basket.png" alt="Handwoven bamboo basket made by an Indian artisan" onError={(event) => { event.currentTarget.src = '/terracotta-diyas.png' }} /><span className="image-caption">Made by hands · Amaravati</span></div></section><section className="quick-actions"><Action icon="＋" label={t.add} onClick={onAnalysis} /><Action icon="⌕" label={t.markets} onClick={() => onNavigate('buyers')} /><Action icon="◎" label={t.ready} onClick={() => onNavigate('intelligence')} /><Action icon="↗" label={t.progress} onClick={() => onNavigate('progress')} /></section><section className="suggestion-card"><div className="suggestion-icon">✦</div><div><p className="eyebrow">{t.suggestion}</p><p>{t.suggestionText}</p><button className="text-btn" onClick={() => onNavigate('intelligence')}>Why this recommendation? →</button></div></section><section className="section-heading"><div><p className="eyebrow">YOUR PRODUCTS</p><h2>Ready to take the next step</h2></div><button className="text-btn" onClick={() => onNavigate('products')}>See all →</button></section><div className="mini-products">{products.slice(0, 3).map((p) => <div className="mini-product" key={p.name}><img src={p.image} alt={p.name} /><div><b>{p.name}</b><span>{p.price}</span></div></div>)}</div><VoiceButton onSpeak={onVoice} /></div> }
 function Action({ icon, label, onClick }: any) { return <button className="action-card" onClick={onClick}><span className="action-icon">{icon}</span><b>{label}</b><span className="action-arrow">→</span></button> }
 function Products({ t, onAdd, onNavigate }: any) { return <div className="page-stack"><PageTitle eyebrow="MY PRODUCTS" title={t.products} action={<button className="primary-btn" onClick={onAdd}>＋ {t.add}</button>} /><div className="product-grid">{products.map((p) => <button className="product-card" key={p.name} onClick={() => onNavigate('intelligence')}><img src={p.image} alt={p.name} /><div className="product-info"><span>{p.type}</span><h3>{p.name}</h3><b>{p.price}</b><small>View analysis →</small></div></button>)}</div><div className="empty-note"><span>✦</span><div><b>Every product has a path</b><p>Add a product and our AI will show you the markets it can reach.</p></div></div></div> }
 function PageTitle({ eyebrow, title, action }: any) { return <div className="page-title"><div><p className="eyebrow">{eyebrow}</p><h1>{title}</h1></div>{action}</div> }
