@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 
 const markets = [
   { key: 'local', label: 'Local Market', score: 92, status: 'Ready', reason: 'Your village and nearby markets already know this craft.', gap: 'Wider product range' },
@@ -24,7 +24,7 @@ const copy: Record<string, Record<string, string>> = {
   ta: { hello: 'வணக்கம், ரமேஷ் ji!', intro: 'உங்கள் கைவினைப் பொருளை சரியான சந்தைக்கு கொண்டுசெல்ல நாங்கள் உதவுவோம்.', add: 'பொருள் சேர்', markets: 'சந்தை கண்டுபிடி', ready: 'என் தயார் நிலை', progress: 'என் முன்னேற்றம்', suggestion: 'AI பரிந்துரை', suggestionText: 'உங்கள் Bamboo Basket க்கு Online Marketplace நல்ல அடுத்த படியாக இருக்கலாம். பெரிய வாங்குபவர்களை அணுகும் முன் உங்கள் டிஜிட்டல் பட்டியலை முடிக்கவும்.', home: 'முகப்பு', products: 'என் பொருட்கள்', help: 'உதவி', profile: 'சுயவிவரம்', intelligence: 'சந்தை தயார்', journey: 'உங்கள் பயணம்' },
   ml: { hello: 'നമസ്കാരം, രമേഷ് ji!', intro: 'നിങ്ങളുടെ കരകൗശലം ശരിയായ വിപണിയിൽ എത്തിക്കാൻ ഞങ്ങൾ സഹായിക്കും.', add: 'ഉൽപ്പന്നം ചേർക്കുക', markets: 'മാർക്കറ്റ് കണ്ടെത്തുക', ready: 'എന്റെ തയ്യാറെടുപ്പ്', progress: 'എന്റെ പുരോഗതി', suggestion: 'AI നിർദ്ദേശം', suggestionText: 'നിങ്ങളുടെ Bamboo Basket ന് Online Marketplace നല്ല അടുത്ത പടി ആയേക്കാം. വലിയ വാങ്ങുന്നവരെ സമീപിക്കുന്നതിന് മുമ്പ് ഡിജിറ്റൽ കാറ്റലോഗ് പൂർത്തിയാക്കുക.', home: 'ഹോം', products: 'എന്റെ ഉൽപ്പന്നങ്ങൾ', help: 'സഹായം', profile: 'പ്രൊഫൈൽ', intelligence: 'മാർക്കറ്റ് തയ്യാറെടുപ്പ്', journey: 'നിങ്ങളുടെ യാത്ര' },
   kn: { hello: 'ನಮಸ್ಕಾರ, ರಮೇಶ್ ji!', intro: 'ನಿಮ್ಮ ಕರಕುಶಲವನ್ನು ಸರಿಯಾದ ಮಾರುಕಟ್ಟೆಗೆ ತಲುಪಿಸಲು ನಾವು ಸಹಾಯ ಮಾಡುತ್ತೇವೆ.', add: 'ಉತ್ಪನ್ನ ಸೇರಿಸಿ', markets: 'ಮಾರುಕಟ್ಟೆ ಹುಡುಕಿ', ready: 'ನನ್ನ ಸಿದ್ಧತೆ', progress: 'ನನ್ನ ಪ್ರಗತಿ', suggestion: 'AI ಸಲಹೆ', suggestionText: 'ನಿಮ್ಮ Bamboo Basket ಗೆ Online Marketplace ಉತ್ತಮ ಮುಂದಿನ ಹಂತವಾಗಬಹುದು. ದೊಡ್ಡ ಖರೀದಿದಾರರನ್ನು ಸಂಪರ್ಕಿಸುವ ಮೊದಲು ನಿಮ್ಮ ಡಿಜಿಟಲ್ ಕ್ಯಾಟಲಾಗ್ ಪೂರ್ಣಗೊಳಿಸಿ.', home: 'ಮುಖಪುಟ', products: 'ನನ್ನ ಉತ್ಪನ್ನಗಳು', help: 'ಸಹಾಯ', profile: 'ಪ್ರೊಫೈಲ್', intelligence: 'ಮಾರುಕಟ್ಟೆ ಸಿದ್ಧತೆ', journey: 'ನಿಮ್ಮ ಪ್ರಯಾಣ' },
-  bn: { hello: 'নমস্কার, রমেশ ji!', intro: 'আপনার কারুশিল্পকে সঠিক বাজারে পৌঁছাতে আমরা সাহায্য করব।', add: 'পণ্য যোগ করুন', markets: 'বাজার খুঁজুন', ready: 'আমার প্রস্তুতি', progress: 'আমার অগ্রগতি', suggestion: 'AI পরামর্শ', suggestionText: 'আপনার Bamboo Basket এর জন্য Online Marketplace ভালো পরবর্তী পদক্ষেপ হতে পারে। বড় ক্রেতাদের সাথে যোগাযোগের আগে আপনার ডিজিটাল ক্যাটালগ সম্পূর্ণ করুন।', home: 'হোম', products: 'আমার পণ্য', help: 'সহায়তা', profile: 'প্রোফাইল', intelligence: 'বাজার প্রস্তুতি', journey: 'আপনার যাত্রা' },
+  bn: { hello: 'নমস্কার, রমেশ ji!', intro: 'আপনার কারুশিল্পকে সঠিক বাজারে পৌঁছাতে আমরা স���হায্য করব।', add: 'পণ্য যোগ করুন', markets: 'বাজার খুঁজুন', ready: 'আমার প্রস্তুতি', progress: 'আমার অগ্রগতি', suggestion: 'AI পরামর্শ', suggestionText: 'আপনার Bamboo Basket এর জন্য Online Marketplace ভালো পরবর্তী পদক্ষেপ হতে পারে। বড় ক্রেতাদের সাথে যোগাযোগের আগে আপনার ডিজিটাল ক্যাটালগ সম্পূর্ণ করুন।', home: 'হোম', products: 'আমার পণ্য', help: 'সহায়তা', profile: 'প্রোফাইল', intelligence: 'বাজার প্রস্তুতি', journey: 'আপনার যাত্রা' },
 }
 
 const voiceLabels: Record<string, string> = { en: 'Speak with voice', hi: 'बोलकर बताएं', te: 'వాయిస్‌తో చెప్పండి', ta: 'குரலில் சொல்லுங்கள்', ml: 'വോയിസിൽ പറയുക', kn: 'ಧ್ವನಿಯಲ್ಲಿ ಹೇಳಿ', bn: 'কথা বলে বলুন' }
@@ -57,14 +57,8 @@ export default function Page() {
   const [shopRating, setShopRating] = useState(0)
   const [shopCategory, setShopCategory] = useState('all')
 
-  useEffect(() => {
-    const saved = window.localStorage.getItem('craftbridge-language')
-    if (saved && copy[saved]) { setLanguage(saved); setShowLanguage(false) }
-  }, [])
-
   const chooseLanguage = (next: string) => {
     setLanguage(next)
-    window.localStorage.setItem('craftbridge-language', next)
   }
   const [showAnalysis, setShowAnalysis] = useState(false)
   const [analysisStep, setAnalysisStep] = useState(0)
