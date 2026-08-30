@@ -11,10 +11,10 @@ const markets = [
 ]
 
 const products = [
-  { name: 'Bamboo Basket', price: '₹850', type: 'Bamboo handicraft', image: '/bamboo-basket.png' },
-  { name: 'Terracotta Diya Set', price: '₹450', type: 'Terracotta', image: '/terracotta-diyas.png' },
-  { name: 'Handwoven Saree', price: '₹2,800', type: 'Handloom textile', image: '/handwoven-saree.png' },
-  { name: 'Wooden Craft', price: '₹1,200', type: 'Wood craft', image: '/wooden-craft.png' },
+  { name: 'Bamboo Basket', price: '₹850', type: 'Bamboo handicraft', category: 'bamboo', rating: 4.6, image: '/bamboo-basket.png' },
+  { name: 'Terracotta Diya Set', price: '₹450', type: 'Terracotta', category: 'diya', rating: 4.4, image: '/terracotta-diyas.png' },
+  { name: 'Handwoven Saree', price: '₹2,800', type: 'Handloom textile', category: 'textile', rating: 4.2, image: '/handwoven-saree.png' },
+  { name: 'Wooden Craft', price: '₹1,200', type: 'Wood craft', category: 'wood', rating: 4.0, image: '/wooden-craft.png' },
 ]
 
 const copy: Record<string, Record<string, string>> = {
@@ -50,6 +50,9 @@ export default function Page() {
   const [language, setLanguage] = useState<string | null>(null)
   const [page, setPage] = useState('home')
   const [showLanguage, setShowLanguage] = useState(true)
+  const [shopPrice, setShopPrice] = useState(3000)
+  const [shopRating, setShopRating] = useState(0)
+  const [shopCategory, setShopCategory] = useState('all')
 
   useEffect(() => {
     const saved = window.localStorage.getItem('craftbridge-language')
@@ -80,12 +83,13 @@ export default function Page() {
     <main className="content">
       {page === 'home' && <Home t={t} l={l} language={language} onNavigate={setPage} onAnalysis={startAnalysis} onVoice={() => notify('मैं अपने सामान को ऑनलाइन बेचने के लिए क्या करूं?')} />}
       {page === 'products' && <Products t={t} onAdd={startAnalysis} onNavigate={setPage} />}
+      {page === 'shop' && <Shop price={shopPrice} setPrice={setShopPrice} rating={shopRating} setRating={setShopRating} category={shopCategory} setCategory={setShopCategory} onContact={() => setShowBuyer(true)} />}
       {page === 'intelligence' && <Intelligence score={score} onNavigate={setPage} roadmap={roadmap} setRoadmap={setRoadmap} />}
       {page === 'buyers' && <Buyers onContact={() => setShowBuyer(true)} />}
       {page === 'progress' && <ProgressView />}
       {page === 'help' && <Help onVoice={() => notify('AI: Online Marketplace आपके लिए अच्छा विकल्प हो सकता है।')} />}
     </main>
-    <nav className="bottom-nav">{[['home','⌂',t.home], ['products','▣',t.products], ['intelligence','◎',t.intelligence], ['buyers','♧',l.buyers], ['progress','↗',t.progress]].map(([key, icon, label]) => <button key={key} className={page === key ? 'active' : ''} onClick={() => setPage(key as string)}><span>{icon}</span><small>{label}</small></button>)}</nav>
+    <nav className="bottom-nav">{[['home','⌂',t.home], ['products','▣',t.products], ['intelligence','◎',t.intelligence], ['shop','⌕','Shop'], ['progress','↗',t.progress]].map(([key, icon, label]) => <button key={key} className={page === key ? 'active' : ''} onClick={() => setPage(key as string)}><span>{icon}</span><small>{label}</small></button>)}</nav>
     {showAnalysis && <AnalysisModal step={analysisStep} onClose={() => { setShowAnalysis(false); setPage('intelligence') }} />}
     {showBuyer && <BuyerModal onClose={() => setShowBuyer(false)} onDone={() => { setShowBuyer(false); notify('Message sent to Dastkar Emporium') }} />}
     {showProfile && <ProfileModal onClose={() => setShowProfile(false)} onSave={() => { setShowProfile(false); notify('Profile updated') }} />}
@@ -93,8 +97,12 @@ export default function Page() {
   </div>
 }
 
-function Home({ t, l, language, onNavigate, onAnalysis, onVoice }: any) { return <div className="page-stack"><section className="welcome"><div><p className="eyebrow">CRAFTBRIDGE AI · {t.journey}</p><h1>{t.hello}</h1><p>{t.intro}</p></div><VoiceButton onSpeak={onVoice} /></section><section className="action-grid"><Action icon="＋" label={t.add} onClick={onAnalysis} /><Action icon="⌕" label={t.markets} onClick={() => onNavigate('buyers')} /><Action icon="◔" label={t.ready} onClick={() => onNavigate('intelligence')} /><Action icon="↗" label={t.progress} onClick={() => onNavigate('progress')} /></section><section className="hero-card"><p className="hero-tag">{l.heroTag}</p><p>{l.heroText}</p><button className="outline-btn" onClick={() => onNavigate('intelligence')}>{l.heroButton}</button></section><section className="cards-grid"><article className="card"><h3>{t.suggestion}</h3><p>{t.suggestionText}</p></article><article className="card"><h3>{l.buyerMatch}</h3><ul>{markets.slice(0,3).map((m) => <li key={m.key}><b>{m.label}</b><span>{m.score}%</span></li>)}</ul></article></section></div> }
+function Home({ t, l, language, onNavigate, onAnalysis, onVoice }: any) { return <div className="page-stack"><section className="welcome"><div><p className="eyebrow">CRAFTBRIDGE AI · {t.journey}</p><h1>{t.hello}</h1><p>{t.intro}</p></div><VoiceButton onSpeak={onVoice} /></section><section className="action-grid"><Action icon="＋" label={t.add} onClick={onAnalysis} /><Action icon="⌕" label="Shop crafts" onClick={() => onNavigate('shop')} /><Action icon="◔" label={t.ready} onClick={() => onNavigate('intelligence')} /><Action icon="↗" label={t.progress} onClick={() => onNavigate('progress')} /></section><section className="hero-card"><p className="hero-tag">{l.heroTag}</p><p>{l.heroText}</p><button className="outline-btn" onClick={() => onNavigate('intelligence')}>{l.heroButton}</button></section><section className="cards-grid"><article className="card"><h3>{t.suggestion}</h3><p>{t.suggestionText}</p></article><article className="card"><h3>{l.buyerMatch}</h3><ul>{markets.slice(0,3).map((m) => <li key={m.key}><b>{m.label}</b><span>{m.score}%</span></li>)}</ul></article></section></div> }
 function Action({ icon, label, onClick }: any) { return <button className="action-card" onClick={onClick}><span className="action-icon">{icon}</span><b>{label}</b><span className="action-arrow">→</span></button> }
+function Shop({ price, setPrice, rating, setRating, category, setCategory, onContact }: any) {
+  const shopProducts = products.filter((product) => Number(product.price.replace(/[₹,]/g, '')) <= price && (category === 'all' || product.category === category) && product.rating >= rating)
+  return <div className="page-stack"><PageTitle eyebrow="SHOP FOR HANDMADE" title="Find crafts you’ll love" action={<span className="soft-badge">{shopProducts.length} results</span>} /><section className="shop-layout"><aside className="filter-panel"><div className="section-heading"><h3>Filters</h3><button className="text-btn" onClick={() => { setPrice(3000); setRating(0); setCategory('all') }}>Clear all</button></div><label className="filter-label">Product category<select value={category} onChange={(e) => setCategory(e.target.value)}><option value="all">All crafts</option><option value="diya">Diyas</option><option value="bamboo">Bamboo</option><option value="textile">Textiles</option></select></label><label className="filter-label">Price range <strong>Up to ₹{price.toLocaleString('en-IN')}</strong><input type="range" min="300" max="3000" step="50" value={price} onChange={(e) => setPrice(Number(e.target.value))} /></label><div className="filter-label"><span>Minimum rating</span><div className="rating-filter">{[1,2,3,4,5].map((star) => <button key={star} className={rating >= star ? 'star active' : 'star'} onClick={() => setRating(star)} aria-label={`${star} stars`}>★</button>)}</div><small>{rating ? `${rating}+ stars` : 'Any rating'}</small></div></aside><section className="shop-results"><div className="result-bar"><span>Showing products within your budget</span><button className="filter-btn">Sort: Recommended</button></div><div className="product-grid">{shopProducts.map((product, index) => <article className="shop-card" key={product.name}><img src={product.image} alt={product.name} /><div className="shop-card-copy"><span className="rating">★★★★★ <small>{(4.6 - index * .2).toFixed(1)}</small></span><h3>{product.name}</h3><p>{product.type}</p><strong>{product.price}</strong><button className="primary-btn full" onClick={onContact}>View product</button></div></article>)}</div>{shopProducts.length === 0 && <div className="empty-state"><h3>No crafts found in this range</h3><p>Try increasing your budget or clearing the rating filter.</p></div>}</section></section></div>
+}
 function Products({ t, onAdd, onNavigate }: any) { return <div className="page-stack"><PageTitle eyebrow="MY PRODUCTS" title={t.products} action={<button className="primary-btn" onClick={onAdd}>＋ {t.add}</button>} /><section className="grid">{products.map((product) => <article key={product.name} className="product-card"><img src={product.image} alt={product.name} /><div><h3>{product.name}</h3><p>{product.type}</p></div><strong>{product.price}</strong></article>)}</section></div> }
 function PageTitle({ eyebrow, title, action }: any) { return <div className="page-title"><div><p className="eyebrow">{eyebrow}</p><h1>{title}</h1></div>{action}</div> }
 function Intelligence({ score, onNavigate, roadmap, setRoadmap }: any) { const gaps = [['Digital Catalog','Needs improvement','Buyers need to see your full range in one place.'],['Product Photography','Good','Clean background and consistent lighting can improve trust.'],['Packaging & Labels','Needs work','Add tags, material details, and care instructions.']]; return <div className="page-stack"><PageTitle eyebrow="MARKET READINESS" title="Online Marketplace" action={<span className="score-pill">{score.score}%</span>} /><section className="card"><h3>Readiness breakdown</h3><ProgressBar value={score.score} tone="terracotta" /><p>{score.reason}</p></section><section className="list-card"><h3>Roadmap (Next 30 days)</h3><ul>{['Create product catalog (8 SKUs)','Improve product photography','Finalize packaging labels','List on two marketplaces'].map((step, i) => <li key={step}><label><input type="checkbox" checked={roadmap[i]} onChange={() => setRoadmap((prev: boolean[]) => prev.map((flag, idx) => idx === i ? !flag : flag))} />{step}</label></li>)}</ul></section><section className="list-card"><h3>Gaps to close</h3>{gaps.map(([name, status, text]) => <article key={name} className="gap-item"><header><b>{name}</b><span>{status}</span></header><p>{text}</p></article>)}</section><button className="primary-btn" onClick={() => onNavigate('buyers')}>Find matching buyers</button></div> }
